@@ -4,28 +4,35 @@ const API = "http://127.0.0.1:5500"
 async function saveNote() {
     const title = document.getElementById("title").value;
     const content = document.getElementById("content").value;
-
-    await fetch(API + "/notes", {
+    try {
+        await fetch(API + "/notes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, content })
     });
 
-    loadNotes()
+    loadNotes();
+    } catch (error) {
+        console.error("Kunne ikke lagre notat:", error);
+    }
 }
 
 async function loadNotes() {
-    const res = await fetch(API + "/notes");
-    const notes = await res.json();
+    try {
+         const res = await fetch(API + "/notes");
+        const notes = await res.json();
 
-    const list = document.getElementById("notes");
-    list.innerHTML = "";
+        const list = document.getElementById("notes");
+        list.innerHTML = "";
 
-    notes.forEach(n => {
+        notes.forEach(n => {
         const li = document.createElement("li");
         li.innerText = n.title + ": " + n.content;
         list.appendChild(li);
     });
+    } catch (error) {
+        console.error("Kunne ikke hente notater:", error);
+    }
 }
 
 // ToDos
@@ -33,7 +40,10 @@ let tasks = [];
 
 function addTask() {
     const text = getElementById("taskInput").value;
+    if (!text.trim()) return;
+
     tasks.push({ text, done: false });
+    document.getElementById("taskInput").value = "";
     renderTasks();
 }
 
@@ -41,35 +51,39 @@ function renderTasks() {
     const list = document.getElementById("taskList").value;
     list.innerHTML = "";
 
-    tasks.forEach(t => {
+    tasks.forEach((t, index) => {
         const li = document.createElement("li");
         li.innerText = t.text;
         list.appendChild(li);
-    })
+    });
 }
 
 async function saveTodo() {
     const title = document.getElementById("todoTitle").value;
-
-    await fetch(API + "/todos", {
+    try {
+        await fetch(API + "/todos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, tasks })
     });
-    
+
     tasks = [];
     renderTasks();
     loadTodos();
+    } catch (error) {
+        console.error("Kunne ikke lagre todo:", error);
+    }
 }
 
 async function loadTodos() {
-    const res = await fetch(API + "/todos");
-    const todos = await res.json();
+    try {
+        const res = await fetch(API + "/todos");
+        const todos = await res.json();
 
-    const list = document.getElementById("todos");
-    list.innerHTML = "";
+        const list = document.getElementById("todos");
+        list.innerHTML = "";
 
-    todos.forEach(todo => {
+        todos.forEach(todo => {
         const li = document.createElement("li");
         li.innerText = todo.title;
 
@@ -84,6 +98,9 @@ async function loadTodos() {
         li.appendChild(ul);
         list.appendChild(li);
     })
+    } catch (error) {
+        console.error("Kunne ikke hente todo:", error)
+    }
 }
 
 // Ved oppstart

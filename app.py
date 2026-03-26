@@ -111,12 +111,15 @@ def get_todos():
 
     for t in todos_raw:
         c.execute("SELECT text, done FROM tasks WHERE todo_id=?", (t[0], ))
-        tasks = c.fetchall()
+        tasks_raw = c.fetchall()
 
         todos.append({
             "id": t[0],
             "title": t[1],
-            "tasks": [{"text": task[0], "done": bool(task[1])} for task in tasks] 
+            "tasks": [
+                {"text": task[0], 
+                 "done": bool(task[1])} 
+                 for task in tasks_raw] 
         })
 
     conn.close()
