@@ -45,12 +45,14 @@ init_db()
 
 @app.route("/notes", methods=["POST"])
 def add_note():
-    data = request.json
+    data = request.get_json()
 
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("INSERT INTO notes (title, content) VALUES (?, ?)",
-                (data["title"], data["content"]))
+    c.execute(
+        "INSERT INTO notes (title, content) VALUES (?, ?)",
+         (data["title"], data["content"])
+    )
     conn.commit()
     conn.close()
 
@@ -66,7 +68,11 @@ def get_note():
 
     notes = []
     for r in rows:
-        notes.append({"id": r[0], "title": r[1], "content": r[2]})
+        notes.append({
+            "id": r[0], 
+            "title": r[1], 
+            "content": r[2]
+    })
 
     conn.close()
     return jsonify(notes)
@@ -75,7 +81,7 @@ def get_note():
 
 @app.route("/todos", methods=["POST"])
 def add_todo():
-    data = request.json
+    data = request.get_json()
 
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -84,7 +90,9 @@ def add_todo():
     todo_id = c.lastrowid
 
     for task in data["tasks"]:
-        c.execute("INSERT INTO tasks (todo_id, text, done) VALUES (?, ?, ?)",(todo_id, task["text"], task["done"]))
+        c.execute("INSERT INTO tasks (todo_id, text, done) VALUES (?, ?, ?)",
+        (todo_id, task["text"], task["done"])
+    )
 
     conn.commit()
     conn.close()
