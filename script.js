@@ -1,4 +1,4 @@
-const API = "http://localhost:5000"
+const API = "http://127.0.0.1:5500"
 
 // Notater
 async function saveNote() {

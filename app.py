@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import sqlite3
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 DB = "database.db"
 
 def init_db():
@@ -11,23 +14,26 @@ def init_db():
     c.execute("""
     CREATE TABLE IF NOT EXISTS notes(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        content TEXT
+        title TEXT NOT NULL,
+        content TEXT NOT NULL
     )
     """)
 
     c.execute("""
-    CREATE TABLES IF NOT EXISTS todos (
+    CREATE TABLE IF NOT EXISTS todos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT
+        title TEXT NOT NULL
     )
     """)
 
     c.execute("""
-    CREATE TABLES IF NOT EXISTS tasks (
+    CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title TEXT,
-        done INTEGER)
+        todo_id INTEGER,
+        text TEXT NOT NULL,
+        done INTEGER NOT NULL,
+        FOREIGN KEY (todo_id) REFERENCES todos(id)
+    )
     """)
 
     conn.commit()
@@ -55,7 +61,7 @@ def get_note():
     conn = sqlite3.connect(DB)
     c = conn.cursor()
 
-    c.execute("INSERT * FROM notes")
+    c.execute("SELECT * FROM notes")
     rows = c.fetchall()
 
     notes = []
