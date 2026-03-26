@@ -6,6 +6,22 @@
     <title>Notat og ToDo applikasjon</title>
 </head>
 <body>
-    
+    <h1>Notater</h1>
+    <input id="title" placeholder="Tittel">
+    <textarea id="content"></textarea>
+    <button onclick="saveNote()">Lagre notat</button>
+
+    <ul id="notes"></ul>
+
+    <h1>To Do</h1>
+    <input id="todoTitle" placeholder="Tittel">
+    <input id="taskInput" placeholder="Oppgave">
+    <button onclick="addTask()">Legg til oppgave</button>
+    <button onclick="saveTodo()">Lagre oppgave</button>
+
+    <ul id="taskList"></ul>
+    <ul id="todos"></ul>
+
+    <script src="script.js"></script>
 </body>
 </html>
