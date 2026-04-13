@@ -169,7 +169,7 @@ small {
 
 <div class="container">
 
-<h1>Produktivitetsapp</h1>
+<h1>Notatapplikasjon</h1>
 <button onclick="toggleDark()">Mørk modus</button>
 
 <h2>Notater</h2>
