@@ -237,3 +237,8 @@ loadTodos();
 </body>
 </html>
 """
+
+# Routing
+@app.route("/")
+def index():
+    return render_template_string(HTML)
