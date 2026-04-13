@@ -212,14 +212,14 @@ async function loadNotes() {
     const div = document.getElementById("notes");
     div.innerHTML = "";
 
-    notes.forEach((n,i)=>{
+    notes.forEach(n => {
         div.innerHTML += `
         <div class="card">
-            <b>${n.title}</b> ${n.pinned ? "Favoritt" : ""}<br>
+            <b>${n.title}</b> ${n.pinned ? "Festet" : ""}<br>
             <small>${n.category || "" } | ${n.created_at}</small><br><br>
             ${n.content}<br><br>
 
-            <button class="btn-success" onclick="pin(${n.id})">Pinn</button>
+            <button class="btn-success" onclick="pin(${n.id})">Fest</button>
             <button class="btn-secondary" onclick="editNote(${n.id})">Rediger</button>
             <button class="btn-delete" onclick="deleteNote(${n.id})">Slett</button>
         </div>
@@ -241,7 +241,7 @@ async function addNote() {
     loadNotes();
 }
 
-async function deleteNote(i){
+async function deleteNote(id){
     await fetch("/notes/"+id,{method:"DELETE"});
     loadNotes();
 }
