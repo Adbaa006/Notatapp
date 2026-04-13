@@ -157,14 +157,14 @@ small {
 <textarea id="content" placeholder="Innhold"></textarea><br>
 <input id="category" placeholder="Kategori"><br><br>
 
-<button onclick="addNote()">Legg til</button>
+<button class="btn-primary" onclick="addNote()">Legg til</button>
 
 <div id="notes"></div>
 
 <h2>Todos</h2>
 
 <input id="todoInput" placeholder="Ny todo">
-<button onclick="addTodo()">Legg til</button>
+<button class="btn-primary" onclick="addTodo()">Legg til</button>
 
 <select onchange="loadTodos()" id="filter">
 <option value="all">Alle</option>
