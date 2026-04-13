@@ -1,32 +1,54 @@
 from flask import Flask, jsonify, request, render_template_string
-import json
-import os
+import sqlite3
 from datetime import datetime
 
 app = Flask(__name__)
 
-DATA_FILE = "data.json"
+DB = "app.db"
 
-# Lagre data
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {"notes": [], "todos": []}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
+# Database
+def get_db():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    return conn
 
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+def init_db():
+    conn = get_db()
+    cur = conn.cursor()
 
-data = load_data()
+    # Notater
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        content TEXT,
+        category TEXT,
+        pinned INTEGER DEFAULT 0,
+        created_at TEXT
+    )
+    """)
 
-# HTML
+    # To Dos
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS todos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        task TEXT,
+        done INTEGER DEFAULT 0
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# Frontend
 HTML = """
 <!DOCTYPE html>
-<html>
+<html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Produktivitetsapp</title>
+<title>Notatapplikasjon</title>
 
 <style>
 * {
@@ -145,17 +167,16 @@ small {
 
 <body>
 
+<div class="container">
+
 <h1>Produktivitetsapp</h1>
 <button onclick="toggleDark()">Mørk modus</button>
 
-<h2>Søk notater</h2>
-<input id="search" oninput="loadNotes()" placeholder="Søk...">
-
 <h2>Notater</h2>
 
-<input id="title" placeholder="Tittel"><br><br>
+<input id="title" placeholder="Tittel">
 <textarea id="content" placeholder="Innhold"></textarea><br>
-<input id="category" placeholder="Kategori"><br><br>
+<input id="category" placeholder="Kategori">
 
 <button class="btn-primary" onclick="addNote()">Legg til</button>
 
@@ -163,10 +184,10 @@ small {
 
 <h2>Todos</h2>
 
-<input id="todoInput" placeholder="Ny todo">
+<input id="todoInput" placeholder="Ny oppgave">
 <button class="btn-primary" onclick="addTodo()">Legg til</button>
 
-<select onchange="loadTodos()" id="filter">
+<select id="filter" onchange="loadTodos()">
 <option value="all">Alle</option>
 <option value="done">Ferdige</option>
 <option value="active">Aktive</option>
@@ -174,25 +195,19 @@ small {
 
 <div id="todos"></div>
 
+</div>
+
 <script>
 
 function toggleDark() {
     document.body.classList.toggle("dark");
 }
 
-// -------- NOTES --------
+// Notater
 
 async function loadNotes() {
-    const search = document.getElementById("search").value.toLowerCase();
     const res = await fetch("/notes");
-    let notes = await res.json();
-
-    notes = notes.filter(n =>
-        n.title.toLowerCase().includes(search) ||
-        n.content.toLowerCase().includes(search)
-    );
-
-    notes.sort((a,b)=> b.pinned - a.pinned);
+    const notes = await res.json();
 
     const div = document.getElementById("notes");
     div.innerHTML = "";
@@ -201,12 +216,12 @@ async function loadNotes() {
         div.innerHTML += `
         <div class="card">
             <b>${n.title}</b> ${n.pinned ? "Favoritt" : ""}<br>
-            <small>${n.category} | ${n.date}</small><br><br>
+            <small>${n.category || "" } | ${n.created_at}</small><br><br>
             ${n.content}<br><br>
 
-            <button class="btn-success" onclick="pin(${i})">Pinn</button>
-            <button class="btn-secondary" onclick="editNote(${i})">Rediger</button>
-            <button class="btn-delete" onclick="deleteNote(${i})">Slett</button>
+            <button class="btn-success" onclick="pin(${n.id})">Pinn</button>
+            <button class="btn-secondary" onclick="editNote(${n.id})">Rediger</button>
+            <button class="btn-delete" onclick="deleteNote(${n.id})">Slett</button>
         </div>
         `;
     });
@@ -227,20 +242,20 @@ async function addNote() {
 }
 
 async function deleteNote(i){
-    await fetch("/notes/"+i,{method:"DELETE"});
+    await fetch("/notes/"+id,{method:"DELETE"});
     loadNotes();
 }
 
-async function pin(i){
-    await fetch("/notes/"+i+"/pin",{method:"PATCH"});
+async function pin(id){
+    await fetch("/notes/"+id+"/pin",{method:"PATCH"});
     loadNotes();
 }
 
-async function editNote(i){
+async function editNote(id){
     const title = prompt("Ny tittel:");
     const content = prompt("Nytt innhold:");
 
-    await fetch("/notes/"+i,{
+    await fetch("/notes/"+id,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({title, content})
@@ -249,7 +264,7 @@ async function editNote(i){
     loadNotes();
 }
 
-// -------- TODOS --------
+// To Dos
 
 async function loadTodos(){
     const filter = document.getElementById("filter").value;
@@ -265,10 +280,10 @@ async function loadTodos(){
     todos.forEach((t,i)=>{
         div.innerHTML+=`
         <div class="card">
-            <span class="${t.done?"done":""}">${t.task}</span>
-            <button class="btn-success" onclick="toggle(${i})">Utført</button>
-            <button class="btn-secondary" onclick="editTodo(${i})">Rediger</button>
-            <button class="btn-delete" onclick="deleteTodo(${i})">Slett</button>
+            <span class="${t.done?"done":""}">${t.task}</span><br><br>
+            <button class="btn-success" onclick="toggle(${t.id})">Utført</button>
+            <button class="btn-secondary" onclick="editTodo(${t.id})">Rediger</button>
+            <button class="btn-delete" onclick="deleteTodo(${t.id})">Slett</button>
         </div>
         `;
     });
@@ -286,19 +301,19 @@ async function addTodo(){
     loadTodos();
 }
 
-async function toggle(i){
-    await fetch("/todos/"+i+"/toggle",{method:"PATCH"});
+async function toggle(id){
+    await fetch("/todos/"+id+"/toggle",{method:"PATCH"});
     loadTodos();
 }
 
-async function deleteTodo(i){
-    await fetch("/todos/"+i,{method:"DELETE"});
+async function deleteTodo(id){
+    await fetch("/todos/"+id,{method:"DELETE"});
     loadTodos();
 }
 
-async function editTodo(i){
+async function editTodo(id){
     const task = prompt("Ny tekst:");
-    await fetch("/todos/"+i,{
+    await fetch("/todos/"+id,{
         method:"PUT",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({task})
@@ -314,81 +329,119 @@ loadTodos();
 </html>
 """
 
-# Routing
 @app.route("/")
 def index():
-    return render_template_string(HTML)
+    return HTML 
 
 # Notater
+
 @app.route("/notes", methods=["GET"])
 def get_notes():
-    return jsonify(data["notes"])
+    conn = get_db()
+    notes = conn.execute("SELECT * FROM notes ORDER BY pinned DESC, id DESC").fetchall()
+    conn.close()
+    return jsonify([dict(n) for n in notes])
 
 @app.route("/notes", methods=["POST"])
 def add_note():
-    d = request.json
-    note = {
-        "title": d["title"],
-        "content": d["content"],
-        "category": d.get("category",""),
-        "pinned": False,
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-    }
-    data["notes"].append(note)
-    save_data(data)
+    data = request.json
+    conn = get_db()
+    conn.execute("""
+        INSERT INTO notes (title, content, category, created_at)
+        VALUES (?, ?, ?, ?)
+    """, (
+        data["title"],
+        data["content"],
+        data.get("category", ""),
+        datetime.now().strftime("%Y-%m-%d %H:%M")
+    ))
+    conn.commit()
+    conn.close()
     return "", 201
 
-@app.route("/notes/<int:i>", methods=["DELETE"])
-def delete_note(i):
-    data["notes"].pop(i)
-    save_data(data)
+@app.route("/notes/<int:id>", methods=["DELETE"])
+def delete_note(id):
+    conn = get_db()
+    conn.execute("DELETE FROM notes WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
     return ""
 
-@app.route("/notes/<int:i>/pin", methods=["PATCH"])
-def pin_note(i):
-    data["notes"][i]["pinned"] = not data["notes"][i]["pinned"]
-    save_data(data)
+@app.route("/notes/<int:id>/pin", methods=["PATCH"])
+def pin_note(id):
+    conn = get_db()
+    conn.execute("""
+        UPDATE notes
+        SET pinned = NOT pinned
+        WHERE id=?
+    """, (id,))
+    conn.commit()
+    conn.close()
     return ""
 
-@app.route("/notes/<int:i>", methods=["PUT"])
-def edit_note(i):
-    d = request.json
-    data["notes"][i]["title"] = d["title"]
-    data["notes"][i]["content"] = d["content"]
-    save_data(data)
+@app.route("/notes/<int:id>", methods=["PUT"])
+def edit_note(id):
+    data = request.json
+    conn = get_db()
+    conn.execute("""
+        UPDATE notes
+        SET title=?, content=?
+        WHERE id=?
+    """, (data["title"], data["content"], id))
+    conn.commit()
+    conn.close()
     return ""
 
 # To Dos
 
 @app.route("/todos", methods=["GET"])
 def get_todos():
-    return jsonify(data["todos"])
+    conn = get_db()
+    todos = conn.execute("SELECT * FROM todos ORDER BY id DESC").fetchall()
+    conn.close()
+    return jsonify([dict(t) for t in todos])
 
 @app.route("/todos", methods=["POST"])
 def add_todo():
-    d = request.json
-    data["todos"].append({"task": d["task"], "done": False})
-    save_data(data)
+    data = request.json
+    conn = get_db()
+    conn.execute("INSERT INTO todos (task) VALUES (?)", (data["task"],))
+    conn.commit()
+    conn.close()
     return ""
 
-@app.route("/todos/<int:i>/toggle", methods=["PATCH"])
-def toggle(i):
-    data["todos"][i]["done"] = not data["todos"][i]["done"]
-    save_data(data)
+@app.route("/todos/<int:id>/toggle", methods=["PATCH"])
+def toggle_todo(id):
+    conn = get_db()
+    conn.execute("""
+        UPDATE todos
+        SET done = NOT done
+        WHERE id=?
+    """, (id,))
+    conn.commit()
+    conn.close()
     return ""
 
-@app.route("/todos/<int:i>", methods=["DELETE"])
-def delete_todo(i):
-    data["todos"].pop(i)
-    save_data(data)
+@app.route("/todos/<int:id>", methods=["DELETE"])
+def delete_todo(id):
+    conn = get_db()
+    conn.execute("DELETE FROM todos WHERE id=?", (id,))
+    conn.commit()
+    conn.close()
     return ""
 
-@app.route("/todos/<int:i>", methods=["PUT"])
-def edit_todo(i):
-    d = request.json
-    data["todos"][i]["task"] = d["task"]
-    save_data(data)
+@app.route("/todos/<int:id>", methods=["PUT"])
+def edit_todo(id):
+    data = request.json
+    conn = get_db()
+    conn.execute("UPDATE todos SET task=? WHERE id=?", (data["task"], id))
+    conn.commit()
+    conn.close()
     return ""
 
+# Kjør
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
