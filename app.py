@@ -204,9 +204,9 @@ async function loadNotes() {
             <small>${n.category} | ${n.date}</small><br><br>
             ${n.content}<br><br>
 
-            <button onclick="pin(${i})">Pinn</button>
-            <button onclick="editNote(${i})">Rediger</button>
-            <button onclick="deleteNote(${i})">Slett</button>
+            <button class="btn-success" onclick="pin(${i})">Pinn</button>
+            <button class="btn-secondary" onclick="editNote(${i})">Rediger</button>
+            <button class="btn-delete" onclick="deleteNote(${i})">Slett</button>
         </div>
         `;
     });
@@ -266,9 +266,9 @@ async function loadTodos(){
         div.innerHTML+=`
         <div class="card">
             <span class="${t.done?"done":""}">${t.task}</span>
-            <button onclick="toggle(${i})">Utført</button>
-            <button onclick="editTodo(${i})">Rediger</button>
-            <button onclick="deleteTodo(${i})">Slett</button>
+            <button class="btn-success" onclick="toggle(${i})">Utført</button>
+            <button class="btn-secondary" onclick="editTodo(${i})">Rediger</button>
+            <button class="btn-delete" onclick="deleteTodo(${i})">Slett</button>
         </div>
         `;
     });
