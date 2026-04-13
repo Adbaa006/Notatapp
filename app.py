@@ -242,3 +242,42 @@ loadTodos();
 @app.route("/")
 def index():
     return render_template_string(HTML)
+
+# Notater
+@app.route("/notes", methods=["GET"])
+def get_notes():
+    return jsonify(data["notes"])
+
+@app.route("/notes", methods=["POST"])
+def add_note():
+    d = request.json
+    note = {
+        "title": d["title"],
+        "content": d["content"],
+        "category": d.get("category",""),
+        "pinned": False,
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+    }
+    data["notes"].append(note)
+    save_data(data)
+    return "", 201
+
+@app.route("/notes/<int:i>", methods=["DELETE"])
+def delete_note(i):
+    data["notes"].pop(i)
+    save_data(data)
+    return ""
+
+@app.route("/notes/<int:i>/pin", methods=["PATCH"])
+def pin_note(i):
+    data["notes"][i]["pinned"] = not data["notes"][i]["pinned"]
+    save_data(data)
+    return ""
+
+@app.route("/notes/<int:i>", methods=["PUT"])
+def edit_note(i):
+    d = request.json
+    data["notes"][i]["title"] = d["title"]
+    data["notes"][i]["content"] = d["content"]
+    save_data(data)
+    return ""
