@@ -104,4 +104,36 @@ function toggleDark() {
     document.body.classList.toggle("dark");
 }
 
+// -------- NOTES --------
+
+async function loadNotes() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const res = await fetch("/notes");
+    let notes = await res.json();
+
+    notes = notes.filter(n =>
+        n.title.toLowerCase().includes(search) ||
+        n.content.toLowerCase().includes(search)
+    );
+
+    notes.sort((a,b)=> b.pinned - a.pinned);
+
+    const div = document.getElementById("notes");
+    div.innerHTML = "";
+
+    notes.forEach((n,i)=>{
+        div.innerHTML += `
+        <div class="card">
+            <b>${n.title}</b> ${n.pinned ? "Favoritt" : ""}<br>
+            <small>${n.category} | ${n.date}</small><br><br>
+            ${n.content}<br><br>
+
+            <button onclick="pin(${i})">Pinn</button>
+            <button onclick="editNote(${i})">Rediger</button>
+            <button onclick="deleteNote(${i})">Slett</button>
+        </div>
+        `;
+    });
+}
+
 """
