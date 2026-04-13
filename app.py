@@ -190,11 +190,50 @@ async function loadTodos(){
         div.innerHTML+=`
         <div class="card">
             <span class="${t.done?"done":""}">${t.task}</span>
-            <button onclick="toggle(${i})">✔️</button>
-            <button onclick="editTodo(${i})">✏️</button>
-            <button onclick="deleteTodo(${i})">🗑️</button>
+            <button onclick="toggle(${i})">Utført</button>
+            <button onclick="editTodo(${i})">Rediger</button>
+            <button onclick="deleteTodo(${i})">Slett</button>
         </div>
         `;
     });
 }
+
+async function addTodo(){
+    const task = document.getElementById("todoInput").value;
+
+    await fetch("/todos",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({task})
+    });
+
+    loadTodos();
+}
+
+async function toggle(i){
+    await fetch("/todos/"+i+"/toggle",{method:"PATCH"});
+    loadTodos();
+}
+
+async function deleteTodo(i){
+    await fetch("/todos/"+i,{method:"DELETE"});
+    loadTodos();
+}
+
+async function editTodo(i){
+    const task = prompt("Ny tekst:");
+    await fetch("/todos/"+i,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({task})
+    });
+    loadTodos();
+}
+
+loadNotes();
+loadTodos();
+
+</script>
+</body>
+</html>
 """
