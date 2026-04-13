@@ -281,3 +281,38 @@ def edit_note(i):
     data["notes"][i]["content"] = d["content"]
     save_data(data)
     return ""
+
+# To Dos
+
+@app.route("/todos", methods=["GET"])
+def get_todos():
+    return jsonify(data["todos"])
+
+@app.route("/todos", methods=["POST"])
+def add_todo():
+    d = request.json
+    data["todos"].append({"task": d["task"], "done": False})
+    save_data(data)
+    return ""
+
+@app.route("/todos/<int:i>/toggle", methods=["PATCH"])
+def toggle(i):
+    data["todos"][i]["done"] = not data["todos"][i]["done"]
+    save_data(data)
+    return ""
+
+@app.route("/todos/<int:i>", methods=["DELETE"])
+def delete_todo(i):
+    data["todos"].pop(i)
+    save_data(data)
+    return ""
+
+@app.route("/todos/<int:i>", methods=["PUT"])
+def edit_todo(i):
+    d = request.json
+    data["todos"][i]["task"] = d["task"]
+    save_data(data)
+    return ""
+
+if __name__ == "__main__":
+    app.run(debug=True)
