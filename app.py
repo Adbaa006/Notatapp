@@ -149,4 +149,27 @@ async function addNote() {
 
     loadNotes();
 }
+
+async function deleteNote(i){
+    await fetch("/notes/"+i,{method:"DELETE"});
+    loadNotes();
+}
+
+async function pin(i){
+    await fetch("/notes/"+i+"/pin",{method:"PATCH"});
+    loadNotes();
+}
+
+async function editNote(i){
+    const title = prompt("Ny tittel:");
+    const content = prompt("Nytt innhold:");
+
+    await fetch("/notes/"+i,{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({title, content})
+    });
+
+    loadNotes();
+}
 """
