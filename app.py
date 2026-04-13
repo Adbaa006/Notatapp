@@ -172,4 +172,29 @@ async function editNote(i){
 
     loadNotes();
 }
+
+// -------- TODOS --------
+
+async function loadTodos(){
+    const filter = document.getElementById("filter").value;
+    const res = await fetch("/todos");
+    let todos = await res.json();
+
+    if(filter==="done") todos = todos.filter(t=>t.done);
+    if(filter==="active") todos = todos.filter(t=>!t.done);
+
+    const div = document.getElementById("todos");
+    div.innerHTML="";
+
+    todos.forEach((t,i)=>{
+        div.innerHTML+=`
+        <div class="card">
+            <span class="${t.done?"done":""}">${t.task}</span>
+            <button onclick="toggle(${i})">✔️</button>
+            <button onclick="editTodo(${i})">✏️</button>
+            <button onclick="deleteTodo(${i})">🗑️</button>
+        </div>
+        `;
+    });
+}
 """
