@@ -29,41 +29,117 @@ HTML = """
 <title>Produktivitetsapp</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: Arial;
-    margin: 0;
+    margin-left: 20rem;
+    margin-right: 20rem;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    color: #111;
+}
+
+.container {
+    max-width: 500px;
+    margin: 40px auto;
     padding: 20px;
-    background: var(--bg);
-    color: var(--text);
 }
 
-:root {
-    --bg: #f4f6fb;
-    --text: #111;
-    --card: white;
-}
-
-.dark {
-    --bg: #1e1e1e;
-    --text: #eee;
-    --card: #2c2c2c;
-}
-
-button {
-    cursor: pointer;
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
 .card {
-    background: var(--card);
-    padding: 15px;
-    border-radius: 10px;
+    background: white;
+    padding: 16px;
+    border-radius: 14px;
     margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+.btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
+}
+
+.btn-success {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+}
+
+.btn-secondary {
+    background: #e5e7eb;
 }
 
 .done {
     text-decoration: line-through;
-    color: green;
+    color: #16a34a;
+    font-weight: bold;
 }
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+small {
+    color: #666;
+}
+
+.dark {
+    background: #1e1e1e;
+    color: #eee;
+}
+
+.dark .card {
+    background: #2c2c2c;
+}
+
 </style>
 </head>
 
